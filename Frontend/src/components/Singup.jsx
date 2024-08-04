@@ -96,7 +96,24 @@
 // export default Singup;
 
 
+// // import React from 'react'
 
+// // const Singup = () => {
+// //   return (
+// //     <div>
+// //       hbjnm,
+// //     </div>
+// //   )
+// // }
+
+// // export default Singup
+
+
+
+
+
+
+// components/Register.js
 import React, { useState } from 'react';
 import axios from 'axios';
 
@@ -110,17 +127,29 @@ const Singup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
+    if (!name || !email || !password || !phone || !gender) {
+      setMessage('All fields are required');
+      return;
+    }
+
     try {
-      const response = await axios.post('http://localhost:4004/user/register', { name, email, password, phone, gender });
+      const response = await axios.post('http://localhost:4004/user/register', {
+        name,
+        email,
+        password,
+        phone,
+        gender
+      });
       setMessage(response.data.message);
     } catch (error) {
+      console.error('Error during registration:', error);
       setMessage(error.response ? error.response.data.message : 'An error occurred');
     }
   };
 
   return (
-    <div className="registration-container">
+    <div className="register-container">
       <h2>Register</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -171,7 +200,7 @@ const Singup = () => {
             onChange={(e) => setGender(e.target.value)}
             required
           >
-            <option value="">Select</option>
+            <option value="" disabled>Select gender</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="other">Other</option>

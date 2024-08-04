@@ -86,7 +86,7 @@ const UpdatePassword = () => {
       console.error('Error updating password:', error);
       setMessage(error.response ? error.response.data.message : 'An error occurred');
     }
-    navigate("/login")
+    // navigate("/login")
   };
 
   return (

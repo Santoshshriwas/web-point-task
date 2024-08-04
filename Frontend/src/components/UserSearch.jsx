@@ -1,130 +1,93 @@
-// import React, { useState } from 'react';
-// import axios from 'axios';
 
-// const UserSearch = () => {
-//   const [searchTerm, setSearchTerm] = useState('');
-//   const [user, setUser] = useState(null);
-//   const [message, setMessage] = useState('');
-
-//   const handleSearch = async (e) => {
-//     e.preventDefault();
-
-//     try {
-//       const response = await axios.get('http://localhost:4004/user/search', {
-//         params: { email: searchTerm }
-//       });
-//       setUser(response.data.user);
-//       setMessage('');
-//     } catch (error) {
-//       console.error('Error searching user:', error);
-//       setMessage(error.response ? error.response.data.message : 'An error occurred');
-//       setUser(null);
-//     }
-//   };
-
-//   return (
-//     <div className="search-page-container">
-//       <h2>Search User</h2>
-//       <form onSubmit={handleSearch}>
-//         <div className="form-group">
-//           <label htmlFor="searchTerm">Search by Email:</label>
-//           <input
-//             type="text"
-//             id="searchTerm"
-//             value={searchTerm}
-//             onChange={(e) => setSearchTerm(e.target.value)}
-//             required
-//           />
-//         </div>
-//         <button type="submit">Search</button>
-//       </form>
-//       {message && <p>{message}</p>}
-//       {user && (
-//         <div className="user-details">
-//           <h3>User Details</h3>
-//           <p><strong>Name:</strong> {user.name}</p>
-//           <p><strong>Email:</strong> {user.email}</p>
-//           <p><strong>Phone:</strong> {user.phone}</p>
-//           <p><strong>Gender:</strong> {user.gender}</p>
-//           <p><strong>Possword:</strong> {user.password}</p>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default UserSearch;
-
-
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const UserSearch = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [user, setUser] = useState(null);
+const AdminUpdatePassword = () => {
+  const [email, setEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [message, setMessage] = useState('');
+  const [users, setUsers] = useState([]);
+  const [selectedUser, setSelectedUser] = useState('');
 
-  const handleSearch = async (e) => {
+  // Fetch users to populate the dropdown
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get('http://localhost:4004/user/alluser', {
+          params: { limit: 100 } // Adjust limit or use pagination if needed
+        });
+        setUsers(response.data.users);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setMessage('Error fetching users');
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const handleUserChange = (e) => {
+    const email = e.target.value;
+    setSelectedUser(email);
+    setEmail(email);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (!email || !newPassword) {
+      setMessage('Both email and new password are required');
+      return;
+    }
+
     try {
-      const response = await axios.get('http://localhost:4004/user/search', {
-        params: { email: searchTerm }
-      });
-      setUser(response.data.user);
-      setMessage('');
+      // Optionally clear any previous authentication token
+      localStorage.removeItem('authToken');
+
+      // Send the request to update the password
+      const response = await axios.put('http://localhost:4004/user/update', { email, newPassword });
+      setMessage(response.data.message);
     } catch (error) {
-      console.error('Error searching user:', error);
+      console.error('Error updating password:', error);
       setMessage(error.response ? error.response.data.message : 'An error occurred');
-      setUser(null);
     }
   };
 
   return (
-    <div className="search-page-container">
-      <h2>Search User</h2>
-      <form onSubmit={handleSearch}>
+    <div className="update-password-container">
+      <h2>Update Password</h2>
+      <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="searchTerm">Search by Email:</label>
+          <label htmlFor="userSelect">Select User:</label>
+          <select
+            id="userSelect"
+            value={selectedUser}
+            onChange={handleUserChange}
+            required
+          >
+            <option value="" disabled>Select a user</option>
+            {users.map(user => (
+              <option key={user._id} value={user.email}>
+                {user.email}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="newPassword">New Password:</label>
           <input
-            type="text"
-            id="searchTerm"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            type="password"
+            id="newPassword"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
             required
           />
         </div>
-        <button type="submit">Search</button>
+        <button type="submit">Update Password</button>
       </form>
       {message && <p>{message}</p>}
-      {user && (
-        <div className="user-details">
-          <h3>User Details</h3>
-          <table className="user-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Gender</th>
-                <th>Password</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>{user.phone}</td>
-                <td>{user.gender}</td>
-                <td>{user.password}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 };
 
-export default UserSearch;
+export default AdminUpdatePassword;

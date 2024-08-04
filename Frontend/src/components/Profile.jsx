@@ -42,47 +42,52 @@
 
 
 
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+// src/components/UserProfile.js
 
-const Profile = ({ name }) => {
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
+
+const Profile = () => {
+  const { id } = useParams(); // Get the user ID from the URL
   const [user, setUser] = useState(null);
-  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get(`http://localhost:4004/user/user/${name}`);
+        const response = await axios.get(`http://localhost:4004/user/profile/${id}`);
         setUser(response.data);
       } catch (err) {
-        if (err.response && err.response.status === 404) {
-          setError('User not found');
-        } else {
-          setError('Error fetching user profile');
-        }
-        console.error(err);
+        setError('Failed to fetch user profile.');
+        console.error('Error fetching user profile:', err);
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchUserProfile();
-  }, [name]);
+  }, [id]);
 
-  if (error) {
-    return <div>{error}</div>;
-  }
-
-  if (!user) {
-    return <div>Loading...</div>;
-  }
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div>
       <h1>User Profile</h1>
-      <p>Name: {user.name}</p>
-      <p>Email: {user.email}</p>
-      <p>Phone: {user.phone}</p>
-      <p>Gender: {user.gender}</p>
+      {user ? (
+        <div>
+          <h2>{user.name}</h2>
+          <p>Email: {user.email}</p>
+          {/* Add other user details as needed */}
+        </div>
+      ) : (
+        <p>No user found</p>
+      )}
     </div>
   );
 };
 
 export default Profile;
+

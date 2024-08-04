@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema({
   password: String,
   phone: String,
   gender: String,
-  image:String
 });
 
 userSchema.statics.findByName = function(name) {

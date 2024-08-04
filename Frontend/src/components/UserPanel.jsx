@@ -5,6 +5,7 @@ const UserPanel = () => {
   const navigate = useNavigate()
   const logout = (req,res)=>{
     navigate("/")
+    localStorage.removeIteme("user")
   }
   return (
    <>
